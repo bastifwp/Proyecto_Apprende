@@ -1,5 +1,8 @@
 #Clase del taller
 import requests
+import openai
+import re
+import time
 
 #Utiliza las siguientes clases 
 from script_respuesta import respuesta
@@ -17,6 +20,34 @@ class taller:
     self.cupos = cupos
     self.modalidad = modalidad
     self.recinto = recinto
+
+  @classmethod
+  def tema_nombre(cls, tema, nombre):
+    nuevo_taller = cls.__new__(cls)
+    nuevo_taller.nombre = nombre
+    nuevo_taller.tema = tema
+    nuevo_taller.duracion = "NULL"
+    nuevo_taller.fecha = "NULL"
+    nuevo_taller.hora = "NULL"
+    nuevo_taller.cupos = "NULL"
+    nuevo_taller.modalidad = "NULL"
+    nuevo_taller.recinto = "NULL"
+
+    return nuevo_taller
+  
+  @classmethod
+  def tema_modalidad(cls, tema, modalidad):
+    nuevo_taller = cls.__new__(cls)
+    nuevo_taller.nombre = "NULL"
+    nuevo_taller.tema = tema
+    nuevo_taller.duracion = "NULL"
+    nuevo_taller.fecha = "NULL"
+    nuevo_taller.hora = "NULL"
+    nuevo_taller.cupos = "NULL"
+    nuevo_taller.modalidad = modalidad
+    nuevo_taller.recinto = "NULL"
+
+    return nuevo_taller
 
   #Función que retorna los datos del taller en forma de diccionario
   def __dict__(self):
@@ -52,6 +83,21 @@ class taller:
     self.recinto = nuevo_recinto
 
 
+  def nombre_chatgpt(cls,texto,tema,nombre_antiguo):
+
+    regex_temaynombre = "([a-zA-zÑñÁáÉéÍíÓóÚúÜü]+\s*)+"
+    question = '"' + texto + '"' + 'De esta descripción de un taller, cuya temática es ' +tema+ ', inventa un nombre para el taller sin usar caracteres especiales y retornalo (no retornes Nombre del taller: blablabla, solo retorna el nombre a secas)'
+    if nombre_antiguo != '':
+      question += ' El nombre no debe ser este: '+ nombre_antiguo
+    question += '. Devuelve solo el string correspondiente al nombre, sin comillas, y que comience con mayúscula'
+    #print("\nEstoy pensando en un nuevo nombre para tu taller...")
+    time.sleep(10)
+    prompt = openai.Completion.create(engine="text-davinci-003",
+                                      prompt=question,
+                                      max_tokens = 2048)
+    Nombre = re.search(regex_temaynombre,prompt.choices[0].text).group().strip()
+
+    return Nombre
 
 
   #Función que crea 5 posibles talleristas relacionado al taller (Aquí ocupamos la api de búsqueda)
@@ -85,7 +131,7 @@ class taller:
 
         #Realizamos la consulta
         response = requests.get(url,params=params)
-        results = response.json()
+        results = response.json() 
 
         #Verificamos si nos pudimos conectar con la API
         if(response.status_code != 200):
@@ -102,11 +148,13 @@ class taller:
         #Filtraremos los resultados recorriendo cada respuesta, contaremos las válidas
         n_posibles_talleristas = n_talleristas_encontrados
 
-        #Recorresmos los resultados
-        for i in range(10):
 
-          #Si hay resultados
-          if "items" in results:
+        #Si hay resultados
+        if "items" in results:
+
+
+          #Recorresmos los resultados
+          for i in range(0, len(results["items"])):
 
             #Filtramos algunos resultados según el dominio
             link = results["items"][i]["link"]
@@ -138,7 +186,7 @@ class taller:
         if n_posibles_talleristas < 5:
 
           #Verificamos número de iteraciones (requests a google)
-          if iteraciones_actual >= 10:
+          if iteraciones_actual >= 10 or actual_start >= 90:
             print("No se han encontrado más resultados")
             return
 
@@ -151,9 +199,11 @@ class taller:
     busqueda = "Talleristas para un taller: " + self.tema + " en modalidad " + self.modalidad
     print("Búsqueda realizada: ", busqueda)
 
-    #Determinamos las keys e ids:
-    API_KEY = "AIzaSyDDqe8IL8-g4Wkl3YuxhNWsP04uvLad6Ug"
-    SEARCH_ENGINE = "b0b920b1c91a044e5"
+    #Determinamos las keys e ids de google:
+    API_KEY = ""
+    SEARCH_ENGINE = ""
+  
+  
 
     #Ahora realizamos la llamada
     make_query(API_KEY, SEARCH_ENGINE, 0, busqueda, 0,0)
@@ -162,4 +212,9 @@ class taller:
     resultado_talleristas = posibles_talleristas
     resultado_insumos = [] #Posteriormente los insumos los haremos de manera independiente.
 
-    return respuesta(resultado_talleristas, resultado_insumos)
+    respuesta = {
+      "link_talleristas" : resultado_talleristas,
+      "link_insumos" : resultado_insumos
+    }
+
+    return respuesta

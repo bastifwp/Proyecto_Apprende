@@ -3,6 +3,7 @@ import openai
 import re
 import time
 from datetime import datetime
+import json
 
 #Utiliza la(s) siguiente(s) clase(s)
 from script_taller import taller
@@ -18,8 +19,8 @@ class busqueda:
   def crearTaller(self):
 
     #LLave para interactuar con la api de chat gpt
-    openai.api_key = "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"
-
+    openai.api_key = ""
+  
     attributes = [["Tema"],["Duración"],["Cupos"],["Modalidad","NULL"],["Fecha","NULL"],["Hora","NULL"],["Nombre","NULL"],["Recinto","NULL"]]
 
     #Le pedimos una descripción del taller que se quiere buscar
@@ -27,7 +28,7 @@ class busqueda:
 
     #Creamos la consulta a chat gpt para que nos retorne datos del taller
     inicio = time.time()
-    question = '"' + description + '"' + 'De esta descripción de un taller, retorna un string con la temática del taller. El tema debe ser una frase corta, o incluso una palabra. Si no puedes deducir el tema, o de que se trata, retorna NULL'
+    question = '"' + description.descripcion + '"' + 'De esta descripción de un taller, retorna un string con la temática del taller. El tema debe ser una frase corta, o incluso una palabra. Si no puedes deducir el tema, o de que se trata, retorna NULL'
     prompt = openai.Completion.create(engine="text-davinci-003",
                               prompt=question,
                               max_tokens = 2048)
@@ -39,7 +40,7 @@ class busqueda:
 
     attributes
 
-    question = '"' + description + '"' + 'De esta descripción de un taller, retorna un string con el siguiente formato "duracionTaller;cuposTaller". Si en alguna parte menciona la duración que tendría el taller, entonces retorna el número de horas a las cuales corresponde (solo retorna un número) en el campo duracionTaller. Si por el contrario no se menciona, retorna NULL en ese campo.'
+    question = '"' + description.descripcion + '"' + 'De esta descripción de un taller, retorna un string con el siguiente formato "duracionTaller;cuposTaller". Si en alguna parte menciona la duración que tendría el taller, entonces retorna el número de horas a las cuales corresponde (solo retorna un número) en el campo duracionTaller. Si por el contrario no se menciona, retorna NULL en ese campo.'
     question += ' Si en alguna parte menciona cuantos cupos tendra el taller (osea cuantas personas podran participar), retorna el numero de cupos (solo retorna un numero) en el campo cuposTaller, si no se menciona entonces retorna NULL en ese campo. Recuerda que no debes escribir el nombre del campo, ni poner en tu respuesta algo como "Duracion del taller: 2 horas", si no mas bien solo debes retornar un numero o NULL en cada campo.'
     question += ' Ejemplos de outputs correctos son "3;20", "NULL;25", etc. No deduzcas duracion del taller ni cupos si no lo dice explicitamente o no es obvio, solo extrae la información si es que puedes encontrarla dentro de la descripción.'
     prompt = openai.Completion.create(engine="text-davinci-003",
@@ -52,7 +53,22 @@ class busqueda:
     attributes[1].append(Duracion)
     attributes[2].append(Cupos)
 
+    dicc = {
+      "Tema": attributes[0][1],
+      "Duracion" : attributes[1][1],
+      "Cupos" : attributes[2][1],
+      "Modalidad" : "NULL",
+      "Fecha" : "NULL",
+      "Hora" : "NULL",
+      "Nombre" : "NULL",
+      "Recinto" : "NULL"
+    }
 
+    print(dicc)
+
+    return dicc
+
+'''
     #Guardamos resultado en variable promt
     all_attributes = False
     nombre_ready = False
@@ -108,15 +124,10 @@ class busqueda:
 
               elif Buen_nombre.strip() == '1':
 
-                question += ' El nombre no debe ser este: '+ Nombre
-                question += '. Devuelve solo el string correspondiente al nombre, sin comillas, y que comience con mayúscula'
-                print("\nEstoy pensando en un nuevo nombre para tu taller...")
-                time.sleep(20)
-                prompt = openai.Completion.create(engine="text-davinci-003",
-                                prompt=question,
-                                max_tokens = 2048)
-                Nombre = re.search(regex_temaynombre,prompt.choices[0].text).group().strip()
+'''              
 
+
+'''
               elif Buen_nombre.strip() == '2':
                 Nombre = input('\n¿Cómo se llamará el taller? Escribe el nombre que desees: ')
                 attributes[6][1] = Nombre.strip()
@@ -150,5 +161,6 @@ class busqueda:
 
       #[["Tema"],["Duración"],["Cupos"],["Modalidad","NULL"],["Fecha","NULL"],["Hora","NULL"],["Nombre","NULL"],["Recinto","NULL"]]
 
-      #Tiene que crear un taller
-      return taller(attributes[6][1], attributes[0][1], attributes[1][1], attributes[4][1], attributes[5][1], attributes[2][1], attributes[3][1], attributes[7][1])
+  #Tiene que crear un taller
+  return taller(attributes[6][1], attributes[0][1], attributes[1][1], attributes[4][1], attributes[5][1], attributes[2][1], attributes[3][1], attributes[7][1])
+'''
