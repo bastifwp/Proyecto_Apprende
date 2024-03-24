@@ -10,6 +10,6 @@ Este es el repositorio del *Grupo 5*, cuyos integrantes son:
 
 ## Wiki
 
-Puede acceder a la Wiki mediante el siguiente [Wiki](a)
+Puede acceder a la Wiki mediante el siguiente [Wiki](https://github.com/bastifwp/Proyecto_Apprende/wiki)
 
 ## Videos
