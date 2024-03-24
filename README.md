@@ -6,7 +6,10 @@ Este es el repositorio del *Grupo 5*, cuyos integrantes son:
 * MICHAEL ANDRÉS FLEMING MANZANARES - 201873044-0
 * ISMAEL ALBERTO PEREZ PINO AYRTON - 202173066-4
 * BASTIAN FELIPE WOHLWEND PACHECO - 202173006-0
+
 * **Tutor**: Camila Norambuena
+
+* **Proyecto**: Proyecto INF236 - PC (2)
 
 ## Wiki
 
