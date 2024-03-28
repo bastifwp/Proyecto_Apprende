@@ -19,9 +19,9 @@ Puede acceder a la Wiki mediante el siguiente [Wiki](https://github.com/bastifwp
 
 > Reemplazar con los enlaces correspondientes
 
-* [Video presentación cliente](https://www.youtube.com)
-* [Video presentación avance 1](https://www.youtube.com/)
-* Etc ...
+* [Video presentación avance 1](https://youtu.be/TBL7QggdGDY)
+* [Video presentación avance 3-4](https://youtu.be/B75C3fBscCc)
+* [Video presentación avance 6](https://youtu.be/tCrPiqSdHfA)
 
 ## Aspectos técnicos relevantes
 
