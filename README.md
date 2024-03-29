@@ -23,4 +23,9 @@ Puede acceder a la Wiki mediante el siguiente [Wiki](https://github.com/bastifwp
 
 ## Aspectos técnicos relevantes
 
-_Todo aspecto relevante cuando para poder usar el proyecto o consideraciones del proyecto base a ser entregado_
+Para utilizar las API de google y openAI se deben utilizar keys de acceso, las cuales no están en el repositorio
+
+# Instrucciones de ejecución
+frontend: streamlit run frontend.py
+backend: uvicorn main:api_talleristas --reload
+
