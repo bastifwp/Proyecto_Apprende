@@ -25,7 +25,7 @@ Puede acceder a la Wiki mediante el siguiente [Wiki](https://github.com/bastifwp
 
 Para utilizar las API de google y openAI se deben utilizar keys de acceso, las cuales no están en el repositorio
 
-# Instrucciones de ejecución
+### Instrucciones de ejecución
 frontend: streamlit run frontend.py
 backend: uvicorn main:api_talleristas --reload
 
