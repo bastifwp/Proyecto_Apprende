@@ -188,8 +188,8 @@ class taller:
     print("Búsqueda realizada: ", busqueda)
 
     #Determinamos las keys e ids de google:
-    API_KEY = "AIzaSyA7-ZewwT7fiOegAEE4TPjKR-CDiuCGABY"  #Esta estaba antes:"AIzaSyDcot58efgF0j2P24VBP17ApE_7R-Cn0ME"
-    SEARCH_ENGINE = "250f16f81b8ac49dc"
+    API_KEY = ""  
+    SEARCH_ENGINE = ""
 
 
     #Realizamos búsqueda hasta tener al menos 5 talleristas
