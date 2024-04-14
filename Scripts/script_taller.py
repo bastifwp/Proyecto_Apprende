@@ -103,20 +103,18 @@ class taller:
   #Función que crea 5 posibles talleristas relacionado al taller (Aquí ocupamos la api de búsqueda)
   def buscarTallerista(self):
 
+
+    #haremos que un tallerista sea un diccionario. e iremos haciendo append para tener una lista de diccionarios 
     posibles_talleristas = []
-    posibles_insumos = []  #Por implementar
 
-    #Función que realiza consultas a API de google (para llamar recursivamente en caso de que no encuentre suficientes opciones)
-    def make_query(api_key, se_id, start, search_query, n_talleristas_encontrados, n_iteraciones):
 
-        '''
-        api_key: kye de la api donde pedirá la request,
-        se_id: motor de búsqueda que utilizará,
-        start: desde que index de resultado buscará (si es 0 mostrara los primeros 10, si es 11, inicia del 11 y muestra los 10 siguientes)
-        '''
-
-        iteraciones_actual = n_iteraciones
-        actual_start = start
+    #Función que realiza una busqueda en la API de google
+    def make_query(api_key, se_id, start, search_query):
+        
+        #api_key: kye de la api donde pedirá la request,
+        #se_id: motor de búsqueda que utilizará,
+        #start: desde que index de resultado buscará (si es 0 mostrara los primeros 10, si es 11, inicia del 11 y muestra los 10 siguientes)
+  
         url = "https://www.googleapis.com/customsearch/v1"#Aquí mandaremos nuestra request
 
         #parámetros para la búsqueda
@@ -139,34 +137,31 @@ class taller:
 
           #Mostramos el error
           if "error" in results:
+            print("Errores: \n")
             print(results["error"]["message"])
+            print(results["error"])
 
           #terminamos ejecución de función
           return
 
 
-        #Filtraremos los resultados recorriendo cada respuesta, contaremos las válidas
-        n_posibles_talleristas = n_talleristas_encontrados
-
-
-        #Si hay resultados
+        #Si la busqueda otorga resultados.
         if "items" in results:
+          
+          #veamos que hay en resultados
 
-
-          #Recorresmos los resultados
+          #Recorremos los resultados
           for i in range(0, len(results["items"])):
 
-            #Filtramos algunos resultados según el dominio
+            #Debemos filtrar los resultados según los dominios
             link = results["items"][i]["link"]
-            #print("No filtrado: ", link)
 
-            #Filtros para linkedin
+            #Si encontró un tallerista de linkedin
             if "linkedin.com" in link:
 
               #Sólo queremos a personas
               if "/in/" in link:
                 posibles_talleristas.append(link)
-                n_posibles_talleristas += 1
 
             #Filtros para superprof
             if "superprof" in link:
@@ -174,39 +169,45 @@ class taller:
               #Sólo queremos a personas
               if "/blog/" not in link and "/clases/" not in link:
                 posibles_talleristas.append(link)
-                n_posibles_talleristas += 1
-                #print(results["items"][i])
-
-            #Vemos si ya tenemos la cantidad de usuarios necesaria
-            if n_posibles_talleristas >= 5:
-              return
 
 
-        #Luego de revisar los resultados, si no hemos encontrado 5 posibles talleristas volver a llamar a la función
-        if n_posibles_talleristas < 5:
+            #Filtros para tusclasesparticulares
+            if "tusclasesparticulares" in link:
+              
+              print("El link contiene tus clases particulares")
 
-          #Verificamos número de iteraciones (requests a google)
-          if iteraciones_actual >= 10 or actual_start >= 90:
-            print("No se han encontrado más resultados")
-            return
+              #Sólo queremos personas
+              if "/profesores/" in link:
+                posibles_talleristas.append(link)
 
-          #Se realiza otra request para que encuentre más talleristas
-          make_query(api_key, se_id, actual_start+11, search_query, n_talleristas_encontrados, iteraciones_actual+1)
-
-
+  
+  
 
     #Ahora hay que llamar a la función de arriba, para esto tenemos que crear la descripción con el taller.
-    busqueda = "Talleristas para un taller: " + self.tema + " en modalidad " + self.modalidad
+    busqueda = "Clases de " + self.tema + " en modalidad " + self.modalidad
     print("Búsqueda realizada: ", busqueda)
 
     #Determinamos las keys e ids de google:
-    API_KEY = ""
-    SEARCH_ENGINE = ""
-  
-  
+    API_KEY = "AIzaSyA7-ZewwT7fiOegAEE4TPjKR-CDiuCGABY"  #Esta estaba antes:"AIzaSyDcot58efgF0j2P24VBP17ApE_7R-Cn0ME"
+    SEARCH_ENGINE = "250f16f81b8ac49dc"
 
-    #Ahora realizamos la llamada
-    make_query(API_KEY, SEARCH_ENGINE, 0, busqueda, 0,0)
+
+    #Realizamos búsqueda hasta tener al menos 5 talleristas
+    make_query(API_KEY, SEARCH_ENGINE, 0, busqueda)
+
+    #Si luego de la busqueda no tenemos suficientes -> iterar máximo 2 veces (para no sobrepasar máximo de querys de google)
+    for i in range(1, 3):
+
+      if len(posibles_talleristas) >= 5:
+        break
+
+      else:
+        make_query(API_KEY, SEARCH_ENGINE, 11*i, busqueda)
+
+
+
+
+
 
     #Creamos a los talleristas con el link y los demás atributos en null.
     resultado_talleristas = posibles_talleristas
@@ -216,5 +217,7 @@ class taller:
       "link_talleristas" : resultado_talleristas,
       "link_insumos" : resultado_insumos
     }
+
+    print(respuesta["link_talleristas"])
 
     return respuesta

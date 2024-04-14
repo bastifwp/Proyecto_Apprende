@@ -15,72 +15,8 @@ def reset_session_state():
     st.session_state.create_name = False
     st.session_state.tallerista = {}
 
-#No las usamos ahora
-def get_attributes1(response):
-    newResponse = response
-    with st.form(key="1"):
-        newResponse["Tema"] = st.text_input("¿De que te gustaría que se tratase el taller?")
-        newResponse["Duracion"] = st.slider("Muy bien, ¿Cuánto tiempo tienes planeado que dure el taller?",0.0,12.0)
-        newResponse["Cupos"] = st.slider("¿Y para cuantas personas tienes pensado que sea el taller?",0,100)
-        newResponse["Modalidad"] = st.selectbox("¿En qué modalidad te gustaría que se realizace el taller?",["Presencial","Online"])
-        newResponse["Fecha"] = st.date_input("¿Y en que fecha se realizaría este taller?", value=None)
-        newResponse["Hora"] = st.time_input("¿A qué hora comenzaría el taller?")
-        newResponse["Recinto"] = st.selectbox("¿En donde se realizará el taller?",["Oficinas Apprende","USM Casa Central","USM Sede San Joaquín","USM Sede Viña del Mar", "USM Sede Vitacura", "USM Sede Concepción"])
-        st.session_state.response = newResponse
-        st.form_submit_button("Listo")
-        
-    return newResponse
-
-def get_attributes2(response):
-    newResponse = response
-    with st.form(key="2"):
-        newResponse["Duracion"] = st.slider("Muy bien, ¿Cuánto tiempo tienes planeado que dure el taller?",0.0,12.0)
-        newResponse["Cupos"] = st.slider("¿Y para cuantas personas tienes pensado que sea el taller?",0,100)
-        newResponse["Modalidad"] = st.selectbox("¿En qué modalidad te gustaría que se realizace el taller?",["Presencial","Online"])
-        newResponse["Fecha"] = st.date_input("¿Y en que fecha se realizaría este taller?", value=None)
-        newResponse["Hora"] = st.time_input("¿A qué hora comenzaría el taller?")
-        newResponse["Recinto"] = st.selectbox("¿En donde se realizará el taller?",["Oficinas Apprende","USM Casa Central","USM Sede San Joaquín","USM Sede Viña del Mar", "USM Sede Vitacura", "USM Sede Concepción"])
-        st.session_state.response = newResponse
-        st.form_submit_button("Listo")
-    return newResponse
-
-def get_attributes3(response):
-    newResponse = response
-    with st.form(key="3"):
-        newResponse["Cupos"] = st.slider("¿Y para cuantas personas tienes pensado que sea el taller?",0,100)
-        newResponse["Modalidad"] = st.selectbox("¿En qué modalidad te gustaría que se realizace el taller?",["Presencial","Online"])
-        newResponse["Fecha"] = st.date_input("¿Y en que fecha se realizaría este taller?", value=None)
-        newResponse["Hora"] = st.time_input("¿A qué hora comenzaría el taller?")
-        newResponse["Recinto"] = st.selectbox("¿En donde se realizará el taller?",["Oficinas Apprende","USM Casa Central","USM Sede San Joaquín","USM Sede Viña del Mar", "USM Sede Vitacura", "USM Sede Concepción"])
-        st.session_state.response = newResponse
-        st.form_submit_button("Listo")
-    return newResponse
-
-def get_attributes4(response):
-    newResponse = response
-    with st.form(key="4"):
-        newResponse["Duracion"] = st.slider("Muy bien, ¿Cuánto tiempo tienes planeado que dure el taller?",0.0,12.0)
-        newResponse["Modalidad"] = st.selectbox("¿En qué modalidad te gustaría que se realizace el taller?",["Presencial","Online"])
-        newResponse["Fecha"] = st.date_input("¿Y en que fecha se realizaría este taller?", value=None)
-        newResponse["Hora"] = st.time_input("¿A qué hora comenzaría el taller?")
-        newResponse["Recinto"] = st.selectbox("¿En donde se realizará el taller?",["Oficinas Apprende","USM Casa Central","USM Sede San Joaquín","USM Sede Viña del Mar", "USM Sede Vitacura", "USM Sede Concepción"])
-        st.session_state.response = newResponse
-        st.form_submit_button("Listo")
-    return newResponse
-
-def get_attributes5(response):
-    newResponse = response
-    with st.form(key="5"):
-        newResponse["Modalidad"] = st.selectbox("¿En qué modalidad te gustaría que se realizace el taller?",["Presencial","Online"])
-        newResponse["Fecha"] = st.date_input("¿Y en que fecha se realizaría este taller?", value=None)
-        newResponse["Hora"] = st.time_input("¿A qué hora comenzaría el taller?")
-        newResponse["Recinto"] = st.selectbox("¿En donde se realizará el taller?",["Oficinas Apprende","USM Casa Central","USM Sede San Joaquín","USM Sede Viña del Mar", "USM Sede Vitacura", "USM Sede Concepción"])
-        st.session_state.response = newResponse
-        st.form_submit_button("Listo")
-    return newResponse
 
 
-#Desde aquí si se usa
 
 with st.container():
 
@@ -122,12 +58,15 @@ with st.container():
             st.session_state.texto = texto
             processed_input = requests.post(url="http://127.0.0.1:8000/Busqueda", data=json.dumps(input))
             #st.write(f"Respuesta de API = {processed_input.text}")
+
+            #Response contendrá un taller
             response = processed_input.json()
             st.session_state.response = response
 
         else:
             st.write("Debe ingresar una descripción")
-        
+    
+    #Si es que se tiene un taller
     if response != {}:
         
         with st.form(key="main_form"):
@@ -158,7 +97,8 @@ with st.container():
             response["Recinto"] = st.selectbox("¿En donde se realizará el taller?",["Oficinas Apprende","USM Casa Central","USM Sede San Joaquín","USM Sede Viña del Mar", "USM Sede Vitacura", "USM Sede Concepción"])
             
 
-            if  st.form_submit_button("Listo"): 
+            #Botón para subir el formulario
+            if st.form_submit_button("Listo"): 
 
                     #Acá se guardan los datos del form
                     st.session_state.response = response
@@ -167,6 +107,7 @@ with st.container():
                         "tema" : st.session_state.response["Tema"],
                         "nombre" : st.session_state.response["Nombre"]
                     }
+
                     st.session_state.newName = requests.put(url="http://127.0.0.1:8000/Taller",data=json.dumps(datos))
                     st.session_state.name_done = 'no'
                     
@@ -199,6 +140,8 @@ with st.container():
         
         if st.session_state.name_done == 'si':
 
+            print("El nombre está correcto")
+            
             st.write("Okey, ", st.session_state.response["Nombre"], "será el nombre de tu taller entonces")
             st.write("En base a la información que me diste, buscaré talleristas que puedan ser de utilidad para su realización :)")
 

@@ -53,7 +53,7 @@ def obtener_taller(texto:user_input):
         
         #texto = input("Hola! Estoy aquí para ayudarte a organizar un nuevo taller :)\nIntroduce una descripción del taller que te gustaría organizar: ")
 
-        #Creamos una nueva busqueda
+    #Creamos una nueva busqueda llamando al constructor y le pasamos un parámtro
     nuevaBusqueda = busqueda(texto)
 
         #Creamos un taller con la búsqueda
@@ -66,20 +66,28 @@ def obtener_taller(texto:user_input):
 @api_talleristas.put("/Taller")
 def crear_nombre(datos:para_pedir_nombre):
 
+    '''
+    Esto se ocupa pero no lo hago pa no usar chatgpt
+
     nuevoTaller = taller.tema_nombre(datos.tema,datos.nombre)
     texto = datos.texto
     tema = nuevoTaller.tema
     nombre = nuevoTaller.nombre
 
     nuevoTaller.nombre = nuevoTaller.nombre_chatgpt(texto,tema,nombre)
+    '''
+    nuevoTaller = taller.tema_nombre(datos.tema,datos.nombre)
 
     return nuevoTaller.nombre
 
 
 @api_talleristas.post("/Respuesta")
 def buscar_talleristas(Taller:para_pedir_lista):
+        
         #Buscamos posibles talleristas para el taller
         nuevoTaller = taller.tema_modalidad(Taller.tema,Taller.modalidad)
+
+        print("Estamos aqui, vamos a buscar un tallerista")
         listaTalleristas = nuevoTaller.buscarTallerista()
 
 
