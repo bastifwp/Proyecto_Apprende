@@ -49,7 +49,7 @@ class busqueda:
   def crearTaller(self):
 
     #LLave para interactuar con la api de chat gpt
-    openai.api_key = "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"
+    openai.api_key = ""
   
     attributes = [["Tema"],["Duración"],["Cupos"],["Modalidad","NULL"],["Fecha","NULL"],["Hora","NULL"],["Nombre","NULL"],["Recinto","NULL"]]
 
