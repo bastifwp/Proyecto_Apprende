@@ -29,3 +29,10 @@ Para utilizar las API de google y openAI se deben utilizar keys de acceso, las c
 * frontend: streamlit run frontend.py
 * backend: uvicorn main:api_talleristas --reload
 
+Deben ser instalados con pip:
+* psycopg2-binary==2.9.9
+*sqlalchemy==2.0.29
+
+Se usa base de datos postgresql, debe estar instalado
+Cambiar nombre de bd, usuario, y contraseña en "secrets.toml"
+
