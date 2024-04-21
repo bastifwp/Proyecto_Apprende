@@ -3,6 +3,7 @@ import requests
 import openai
 import re
 import time
+from bs4 import BeautifulSoup
 
 #Utiliza las siguientes clases 
 from script_respuesta import respuesta
@@ -155,20 +156,81 @@ class taller:
 
             #Debemos filtrar los resultados según los dominios
             link = results["items"][i]["link"]
+            resp = requests.get(link)
+            doc = BeautifulSoup(resp.text, "html.parser")
+            tallerista_data = {}
+            print(link)
 
-            #Si encontró un tallerista de linkedin
+
+            #Linkedin RIP
+            '''#Si encontró un tallerista de linkedin
             if "linkedin.com" in link:
 
               #Sólo queremos a personas
               if "/in/" in link:
-                posibles_talleristas.append(link)
+                posibles_talleristas.append(link)'''
 
             #Filtros para superprof
             if "superprof" in link:
 
               #Sólo queremos a personas
               if "/blog/" not in link and "/clases/" not in link:
-                posibles_talleristas.append(link)
+                #posibles_talleristas.append(link)
+
+                #-----SCRAPPER-----
+                nombre = doc.find("div", class_="name").text.strip() #Lo cambié un poco porque guardaba cosas de más
+                nombre = nombre.split()[0] #DETALLE: sólo se almacena el primer nombre (se pierde 2° nombre/apellido en caso de que haya)
+                print("Nombre:", nombre)
+                tallerista_data["Nombre"] = nombre
+
+                #En este caso hay varias tarjetas, considearemos sólo online y presencial
+                tag_ubicacion_presencial1 = doc.find("li", class_="home")
+                tag_ubicacion_presencial2 = doc.find("span", class_="picto pin")
+                tag_ubicacion_online = doc.find("li", class_="webcam")
+
+                modalidad = []
+
+                if tag_ubicacion_presencial1 or tag_ubicacion_presencial2:
+                    modalidad.append("Presencial")
+
+                if tag_ubicacion_online:
+                    modalidad.append("Online")
+
+                print("Modalidad:", modalidad)
+                tallerista_data["Modalidad"] = "" #Lo hice str para efectos del frontend
+                for mod in modalidad:
+                  if tallerista_data["Modalidad"] != "":
+                    tallerista_data["Modalidad"] += ", "+mod
+                  else:
+                    tallerista_data["Modalidad"] += mod
+
+                #Buscamos el precio (Aqui podría haber errores en caso de que no pille precio, pero no debería)          
+                precio = doc.find("ul", class_="infos").find("span", class_="value").text
+                print("Precio:", precio)
+                tallerista_data["Precio"] = precio
+
+                temas = doc.find("div", class_="subjects cat-trigger").find_all("li")
+                temas_final="" #Lo hice str para efectos del frontend
+                for tema in temas:
+                    if temas_final != "":
+                      temas_final += ", "+tema.text.strip()
+                    else:
+                      temas_final += tema.text.strip()
+                tallerista_data["Tema"] = temas_final
+                print("Temas:", temas_final)
+
+                tallerista_data["Enlace"] = link
+
+                fuente = "superprof"
+                print("Fuente:", fuente)
+                tallerista_data["Fuente"] = fuente
+
+                
+
+                print(tallerista_data)
+
+                #Guardamos el tallerista como diccionario en la lista de posibles
+                posibles_talleristas.append(tallerista_data)
 
 
             #Filtros para tusclasesparticulares
@@ -177,8 +239,67 @@ class taller:
               print("El link contiene tus clases particulares")
 
               #Sólo queremos personas
-              if "/profesores/" in link:
-                posibles_talleristas.append(link)
+              if "/profesores/" in link and ".aspx" in link: #El ".aspx" es para que no salgan páginas con varios resultados de búsqueda
+                #posibles_talleristas.append(link)
+
+                if doc.find("img", class_= "notfound"): #Esto es porque a veces salían páginas que ya no existían
+                  print("El aviso ya no está disponible")
+
+                else:
+
+                  #-----SCRAPPER-----
+                  nombre_tag = doc.find(["a"], id="lnkProfile")
+                  nombre ="-"
+                  if nombre_tag:
+                    nombre = nombre_tag.text
+
+                  print("Nombre:", nombre)
+                  tallerista_data["Nombre"] = nombre
+
+                  #ESTO DE MODALIDAD HAY QUE PROBARLO
+                  
+                  #Si el tag ubicacion tiene el texto online -> es online, sino es presencial  
+                  tag_ubicacion = doc.find("div", id="line_location").find("span")
+
+                  #Si se encontró el tag:
+                  modalidad = ""
+                  if tag_ubicacion:
+                      if tag_ubicacion.text.strip() == "On-line":
+                          modalidad = "Online"
+                      else:
+                          modalidad = "Presencial"
+
+                  print("Modalidad:", modalidad)
+                  tallerista_data["Modalidad"] = str(modalidad) #Lo hice str para efectos del frontend
+
+                  #Buscamos el precio 
+                  precio = "-"
+                  precio_tag = doc.find("div", class_="price").find("b")
+                  if precio_tag:
+                    precio = "$" + precio_tag.text
+                  print("Precio:", precio)
+                  tallerista_data["Precio"] = precio
+
+                  #Buscamos el tema
+                  Tema = "-"
+                  tema_tag = doc.find("span", class_= "subject")
+                  if tema_tag:
+                    Tema = tema_tag.text
+                  print("Tema:", Tema)
+                  tallerista_data["Tema"] = Tema
+
+                  tallerista_data["Enlace"] = link                  
+
+                  Fuente = "tusclasesparticulares"
+                  print("Fuente:",Fuente)
+                  tallerista_data["Fuente"] = Fuente
+
+
+                  
+                  print(tallerista_data)
+
+                  #Guardamos el tallerista como diccionario en la lista de posibles
+                  posibles_talleristas.append(tallerista_data)
 
   
   
@@ -188,8 +309,8 @@ class taller:
     print("Búsqueda realizada: ", busqueda)
 
     #Determinamos las keys e ids de google:
-    API_KEY = ""  
-    SEARCH_ENGINE = ""
+    API_KEY = "AIzaSyA7-ZewwT7fiOegAEE4TPjKR-CDiuCGABY" #la del dc
+    SEARCH_ENGINE = "250f16f81b8ac49dc" #la del dc
 
 
     #Realizamos búsqueda hasta tener al menos 5 talleristas
