@@ -156,7 +156,7 @@ class taller:
 
             #Debemos filtrar los resultados según los dominios
             link = results["items"][i]["link"]
-            resp = requests.get(link)
+            resp = requests.get(link) #Así tenemos el html jeje
             doc = BeautifulSoup(resp.text, "html.parser")
             tallerista_data = {}
             print(link)
@@ -230,7 +230,8 @@ class taller:
                 print(tallerista_data)
 
                 #Guardamos el tallerista como diccionario en la lista de posibles
-                posibles_talleristas.append(tallerista_data)
+                if nombre != None:
+                  posibles_talleristas.append(tallerista_data)
 
 
             #Filtros para tusclasesparticulares
@@ -299,13 +300,14 @@ class taller:
                   print(tallerista_data)
 
                   #Guardamos el tallerista como diccionario en la lista de posibles
-                  posibles_talleristas.append(tallerista_data)
+                  if nombre != None:
+                    posibles_talleristas.append(tallerista_data)
 
   
   
 
     #Ahora hay que llamar a la función de arriba, para esto tenemos que crear la descripción con el taller.
-    busqueda = "Clases de " + self.tema + " en modalidad " + self.modalidad
+    busqueda = "Profesores para clases de " + self.tema + " con modalidad de la clase " + self.modalidad
     print("Búsqueda realizada: ", busqueda)
 
     #Determinamos las keys e ids de google:
@@ -335,10 +337,10 @@ class taller:
     resultado_insumos = [] #Posteriormente los insumos los haremos de manera independiente.
 
     respuesta = {
-      "link_talleristas" : resultado_talleristas,
-      "link_insumos" : resultado_insumos
+      "link_talleristas" : resultado_talleristas
     }
 
-    print(respuesta["link_talleristas"])
+    print("data:", respuesta["link_talleristas"])
+    print("primero:", respuesta["link_talleristas"][0])
 
     return respuesta

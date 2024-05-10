@@ -2,16 +2,45 @@ import streamlit as st
 import requests
 import json
 from sqlalchemy import create_engine,text
+import psycopg2
+import pandas as pd
+
+
+#Librerias para los formularios de google
+from apiclient import discovery
+from httplib2 import Http
+from oauth2client.service_account import (ServiceAccountCredentials)
+import json #Este creo q no es necesario
+
 
 st.set_page_config(page_title="Apprende",page_icon="Images/logo.png", layout="wide")
 
-#Conección a base de datos, cambiar con el url correspondiente (postgresql://[usuario]:secret@localhost:5432/[nombre_de_bd])
-engine = create_engine("postgresql://postgres:secret@localhost:5432/Apprende") 
 
+#Conección a base de datos, cambiar con el url correspondiente (postgresql://[usuario]:secret@localhost:5432/[nombre_de_bd])
+#engine = create_engine("postgresql://postgres:secret@localhost:5432/app?client_encoding=utf8") 
+
+#Nos conectamos con la base de datos
+#try:
+con = psycopg2.connect(
+    dbname="prueba",
+    user="postgres",
+    password="bfwp1234",
+    host="localhost",
+    port="5432",
+
+    client_encoding='utf8'
+        )
+#print("NOS CONECTAMOS SEÑORES")
+#except:
+    #print("Failed to connect to database")
+
+#Este cursor es el que nos permite realizar operaciones sql
+cur = con.cursor()
 
 #Usuarios, registrarse directamente del script pues no hay registro en el frontend
 st.session_state.users = {
-    "Scarl3th": "@Leprechaun10"
+    "Scarl3th": "@Leprechaun10",
+    "xltn": "ayrton1208"
 }
 
 #Inicializamos variables de estado relacionadas a usuario
@@ -33,6 +62,15 @@ def reset_session_state():
 #Inicializamos variable de estado relacionada a la view
 if "page" not in st.session_state:
         st.session_state.page = 'Login'
+
+
+#Inicializamos variable de estado relacionada con las propuestas
+if "show_link_formulario_propuestas" not in st.session_state:
+    st.session_state.show_link_formulario_propuestas = False
+
+if "form_link" not in st.session_state:
+    st.session_state.form_link = ""
+
 
 #Implementación de login
 if st.session_state.page == 'Login':
@@ -206,11 +244,14 @@ if st.session_state.page == 'Buscador':
                     }
 
                     processed_links = requests.post(url="http://127.0.0.1:8000/Respuesta", data=json.dumps(datos))
+                    print("Se hará lo de processed_links")
                     links = processed_links.json()
+                    print("Se hizo lo de processed_links")
                     st.session_state.links = links["link_talleristas"]
 
 
                 st.write("Estos son los links a los perfiles que he encontrado:")
+
 
                 df = st.session_state.talleristas    
                 #Verificamos que no se hayan guardado ya los talleristas encontrados
@@ -277,17 +318,30 @@ if st.session_state.page == 'Buscador':
                                     q = 'INSERT INTO talleristas (Nombre,Modalidad,Precio,Tema,Enlace,Fuente,Guardado) VALUES ('
                                     q += "'"+st.session_state.talleristas[b][i]+"'"
                             q += ");"
-                            with engine.connect() as con:
-                                print(q)
-                                con.execute(text(q))
-                                con.commit() #Agregamos a bd
+                            
+                            print("\n \n Esto es q: ", q, "\n \n")
+                            #with engine.connect() as con:
+
+                                #Le puse esto
+                            #    with con.begin():
+                            #        print(q)
+
+
+                            cur.execute(q)
+                            con.commit()
+                      
 
                         else: #Si a == False
                             q = "DELETE FROM Talleristas WHERE Enlace = '"+st.session_state.talleristas['Enlace'][i]+"';"
-                            with engine.connect() as con:
-                                print(q)
-                                con.execute(text(q))
-                                con.commit() #Eliminamos de db
+                            #with engine.connect() as con:
+
+                                #with con.begin():
+                                    #print(q)
+                          
+                            cur.execute(q)
+                            con.commit()
+
+                       
 
                     i += 1 #Actualizamos index
 
@@ -300,12 +354,184 @@ if st.session_state.page == 'Buscador':
 elif st.session_state.page == 'Talleristas':
 
     st.title('Talleristas')
-    with engine.connect() as con:
-        tdf = con.execute(text("SELECT * FROM talleristas;"))
-        con.commit()
-    st.dataframe(tdf,hide_index=True)
+
+    cur.execute("SELECT * FROM talleristas;")
+
+    struct = {
+        "ID": [],
+        "Nombre": [],
+        "Modalidad": [],
+        "Precio": [],
+        "Temas": [],
+        "Enlace": [],
+        "Fuente": [],
+        "Guardado": []
+    }
+    tdf = cur.fetchall()
+    for a in tdf:
+        struct["ID"].append(a[0])
+        struct["Nombre"].append(a[1])
+        struct["Modalidad"].append(a[2])
+        struct["Precio"].append(a[3])
+        struct["Temas"].append(a[4])
+        struct["Enlace"].append(a[5])
+        struct["Fuente"].append(a[6])
+        struct["Guardado"].append(a[7])
+        
+                
+    print("SE realizo un SELECT")
+    print("EL TDF ES ESTE: ", tdf)
+    st.dataframe(struct ,hide_index=True)
 
 #View de Propuestas de taller escritas por talleristas
 elif st.session_state.page == 'Propuestas':
-
     st.title('Propuestas')
+
+    #Botón para generar formulario
+    if st.button("Generar link de formulario"):
+        st.session_state.show_link_formulario_propuestas = True
+
+        #Generamos el formulario:
+
+        #Cosas de google xd
+        SCOPES = "https://www.googleapis.com/auth/forms.body"
+        DISCOVERY_DOC = "https://forms.googleapis.com/$discovery/rest?version=v1"
+    
+        #Credenciales para autenticarse
+        creds = ServiceAccountCredentials.from_json_keyfile_name('credentials.json', SCOPES)
+
+        #Se lo enviamos a google para que nos autentique y tener un cliente http autenticado
+        http = creds.authorize(Http())
+
+        #Ahora creamos interfaz con la que interactuaremos con la api de google
+        form_service = discovery.build(
+            'forms',
+            'v1',
+            http=http,
+            discoveryServiceUrl=DISCOVERY_DOC,
+            static_discovery=False
+        )
+
+        #Creamos plantilla de formulario vacío
+        NEW_FORM = {
+            "info":{
+                "title" : "Propuesta de clase",
+            }
+        }
+
+        #Creamos cada pregunta por separado y despues las insertamos en el formulario
+        first_question = {
+            "requests": [{
+                "createItem" : {
+                    "item" : {
+                        "title" : "Cuéntanos sobre ti",
+                        "questionItem" : {
+                            "question" : {
+                                "required" : True,
+                                "textQuestion" : {
+                                "paragraph": True
+                                }
+                            }
+                        },
+                    },
+                    
+                "location": {
+                        "index": 0
+                    }
+                },
+            }]
+        }
+
+
+        second_question = {
+            "requests": [{
+                "createItem" : {
+                    "item" : {
+                        "title" : "Descripción de tu clase",
+                        "questionItem" : {
+                            "question" : {
+                                "required" : True,
+                                "textQuestion" : {
+                                "paragraph": True
+                                }
+                            }
+                        },
+                    },
+                    
+                "location": {
+                        "index": 1
+                    }
+                },
+            }]
+        }
+
+        third_question = {
+            "requests": [{
+                "createItem" : {
+                    "item" : {
+                        "title" : "Cantidad de personas",
+                        "questionItem" : {
+                            "question" : {
+                                "required" : True,
+                                "choiceQuestion" : {
+                                    "type": "RADIO",
+                                    "options":[
+                                        {
+                                            "value": "[1-5]"
+                                        },
+
+                                        {
+                                            "value": "[5-10]"
+                                        },
+
+                                        {
+                                            "value": "[10-15]"
+                                        },
+
+                                        {
+                                            "value": "[15-20]"
+                                        },
+
+                                        {
+                                            "value": "[20-30]"
+                                        },
+
+                                        {
+                                            "value": "[30-50]"
+                                        },                       
+
+                                    ],
+                                    "shuffle": False
+                                }
+                            }
+                        },
+                    },
+                    
+                "location": {
+                        "index": 2
+                    }
+                },
+            }]
+
+        }
+
+        #Ahora inicializamos formulario vacío
+        result = form_service.forms().create(body = NEW_FORM).execute()
+
+        #Ahora metemos las preguntas
+        question_setting = form_service.forms().batchUpdate(formId=result["formId"], body = first_question).execute()
+        question_setting = form_service.forms().batchUpdate(formId=result["formId"], body = second_question).execute()
+        question_setting = form_service.forms().batchUpdate(formId=result["formId"], body = third_question).execute()
+
+        #Podemos obtener el formulario creado
+        get_result = form_service.forms().get(formId = result["formId"]).execute()
+
+        form_url = form_service.forms().get(formId = result["formId"]).execute()["responderUri"]
+
+        st.session_state.form_link = form_url
+
+        #Comprobamos si se creó
+        print(json.dumps(get_result, indent=4))
+
+    if st.session_state.show_link_formulario_propuestas:
+        st.write(st.session_state.form_link)

@@ -8,6 +8,7 @@ import json
 from pydantic import BaseModel
 from datetime import date,time
 from typing import Optional
+import re
 
 class user_input(BaseModel):
     descripcion : str
@@ -49,19 +50,16 @@ api_talleristas = FastAPI()
 
 @api_talleristas.post("/Busqueda")
 def obtener_taller(texto:user_input):
-    #if __name__ == "__main__":
-        
-        #texto = input("Hola! Estoy aquí para ayudarte a organizar un nuevo taller :)\nIntroduce una descripción del taller que te gustaría organizar: ")
 
     #Creamos una nueva busqueda llamando al constructor y le pasamos un parámtro
-    nuevaBusqueda = busqueda(texto)
+    if re.fullmatch("\s*",texto.descripcion) or texto.descripcion == "":
+        return 400
+    else:
+        nuevaBusqueda = busqueda(texto)
 
         #Creamos un taller con la búsqueda
-    nuevoTaller = nuevaBusqueda.crearTaller()
-
-    return nuevoTaller
-
-        #print("Nuevo taller: ", nuevoTaller.__dict__(), "\n")
+        nuevoTaller = nuevaBusqueda.crearTaller()
+        return nuevoTaller
 
 @api_talleristas.put("/Taller")
 def crear_nombre(datos:para_pedir_nombre):
@@ -86,9 +84,11 @@ def buscar_talleristas(Taller:para_pedir_lista):
         
         #Buscamos posibles talleristas para el taller
         nuevoTaller = taller.tema_modalidad(Taller.tema,Taller.modalidad)
-
-        print("Estamos aqui, vamos a buscar un tallerista")
-        listaTalleristas = nuevoTaller.buscarTallerista()
+        if re.fullmatch("\s*",nuevoTaller.tema) or nuevoTaller.tema == "": 
+            return 400 
+        else: 
+            print("Estamos aqui, vamos a buscar un tallerista")
+            listaTalleristas = nuevoTaller.buscarTallerista()
 
 
         return listaTalleristas
