@@ -21,6 +21,8 @@ Puede acceder a la Wiki mediante el siguiente [Wiki](https://github.com/bastifwp
 * [Video presentación avance 3-4](https://youtu.be/B75C3fBscCc)
 * [Video presentación avance 6](https://youtu.be/tCrPiqSdHfA)
 
+* [Video Hito 4](https://www.youtube.com/watch?v=EUWXO9bkqzM)
+
 ## Aspectos técnicos relevantes
 
 Para utilizar las API de google y openAI se deben utilizar keys de acceso, las cuales no están en el repositorio
