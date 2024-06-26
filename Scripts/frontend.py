@@ -16,11 +16,7 @@ import json #Este creo q no es necesario
 st.set_page_config(page_title="Apprende",page_icon="Images/logo.png", layout="wide")
 
 
-#Conección a base de datos, cambiar con el url correspondiente (postgresql://[usuario]:secret@localhost:5432/[nombre_de_bd])
-#engine = create_engine("postgresql://postgres:secret@localhost:5432/app?client_encoding=utf8") 
 
-#Nos conectamos con la base de datos
-#try:
 con = psycopg2.connect(
     dbname="prueba",
     user="postgres",
@@ -29,7 +25,7 @@ con = psycopg2.connect(
     port="5432",
 
     client_encoding='utf8'
-        )
+    )
 #print("NOS CONECTAMOS SEÑORES")
 #except:
     #print("Failed to connect to database")
