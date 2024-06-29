@@ -84,7 +84,7 @@ class taller:
     self.recinto = nuevo_recinto
 
 
-  def nombre_chatgpt(cls,texto,tema,nombre_antiguo):
+  def nombre_chatgpt(self,texto,tema,nombre_antiguo):
 
     regex_temaynombre = "([a-zA-zÑñÁáÉéÍíÓóÚúÜü]+\s*)+"
     question = '"' + texto + '"' + 'De esta descripción de un taller, cuya temática es ' +tema+ ', inventa un nombre para el taller sin usar caracteres especiales y retornalo (no retornes Nombre del taller: blablabla, solo retorna el nombre a secas)'
@@ -311,7 +311,8 @@ class taller:
     print("Búsqueda realizada: ", busqueda)
 
     #Determinamos las keys e ids de google:
-    API_KEY = "AIzaSyA7-ZewwT7fiOegAEE4TPjKR-CDiuCGABY" #la del dc
+    claves = open("Clave_google.txt", "r")
+    API_KEY =  claves.readline().strip()#la del dc
     SEARCH_ENGINE = "250f16f81b8ac49dc" #la del dc
 
 
